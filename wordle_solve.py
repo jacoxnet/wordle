@@ -75,11 +75,7 @@ class WordKnowledge:
     # test to see if they meet current knowledge criteria
     # returns updated word list
     def getUpdatedWordList(self, wordlist):
-        returnVal = []
-        for word in wordlist:
-            if self.test_word(word):
-                returnVal.append(word)
-        return returnVal
+        return [word for word in wordlist if self.test_word(word)]
 
     # update knowledge based on color response to guess word
     # response is in the form of a string of G, B, and Y. 

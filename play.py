@@ -28,8 +28,13 @@ while True:
     if selection < 1 or selection > 3:
         print('Invalid choice - try again')    
     if selection == 3:
-        word = input('word to remove: ')
-        validWords.remove(word)
+        print('Word to remove')
+        if guess != '':
+            print('  (hit enter for prior guess', guess, '):')
+        removeword = input()
+        if removeword == '':
+            removeword = guess
+        validWords.remove(removeword)
     if selection == 1:
         guess = knowledge.nextGuess(validWords)
         print('New guess is ', guess)
