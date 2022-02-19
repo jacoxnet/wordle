@@ -82,7 +82,7 @@ class WordKnowledge:
         return returnVal
 
     # update knowledge based on color response to guess word
-    # response is in the form of a string of G, S, and Y. 
+    # response is in the form of a string of G, B, and Y. 
     #   G - green (letter correct in proper position)
     #   Y - yellow (letter correc in wrong position)
     #   B - black or shadow (letter not in word)
