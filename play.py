@@ -1,7 +1,8 @@
 import wordle_solve, json
 
 # word list - load in from json file
-f = open('words_dictionary.json')
+# f = open('bigdictionary.json')
+f = open('wordledictionary.json')
 wordList = json.load(f)
 f.close
 

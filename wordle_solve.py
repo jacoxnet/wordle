@@ -3,7 +3,7 @@ import copy
 import random
 
 # length of words we're working with
-WORDLEN = 11
+WORDLEN = 5
 
 # contains what we know about each letter position (e.g., 0-4)
 # There is a PositionList instance for each position
