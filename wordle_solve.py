@@ -71,7 +71,7 @@ class WordKnowledge:
                 return False
         return True
 
-    # go through list of words passed (validWords) and
+    # go through list of words passed (valid_words) and
     # test to see if they meet current knowledge criteria
     # returns updated word list
     def getUpdatedWordList(self, wordlist):
@@ -110,22 +110,29 @@ class WordKnowledge:
                 returnVal = returnVal + 'B'
         return returnVal
 
-    # calculate score for word
-    def score(self, guess, valids):
+    # calculate escore for word
+    # escore adds up the number of words in valids that would be eliminated
+    # if we choose 'guess' and the secret word is one of the existing valids
+    # don't count the case of the secret is the guess since that's always going to 
+    # be the same number
+    def calc_escore(self, guess, valids):
         score = 0
         if len(valids) == 1:
             return 100 * (guess == valids[0])
         for word in valids:
-            k2 = copy.deepcopy(self)
-            # calculate the response assuming word is the secret
-            response = k2.color_calc(guess, word)
-            # update copy of knowledge with that response
-            k2.update_knowledge(guess, response)
-            # delta score is difference between # of original valids minus assumed new valids
-            score = score + (len(valids) - len(k2.getUpdatedWordList(valids)))
+            if word != guess:
+                k2 = copy.deepcopy(self)
+                # calculate the response assuming word is the secret
+                response = k2.color_calc(guess, word)
+                # update copy of knowledge with that response
+                k2.update_knowledge(guess, response)
+                # delta score is difference between # of original valids minus assumed new valids
+                score = score + (len(valids) - len(k2.getUpdatedWordList(valids)))
         return score
 
-    def nextGuess2(self, valids):
+    # pick the best word in word_list that captures the most
+    # letters in all the words in valids
+    def best_wc_guess(self, valids, word_list):
         # prepare a list of counts of letters in valid words
         counts = {}
         for ch in range(ord('a'), ord('z') + 1):
@@ -134,27 +141,34 @@ class WordKnowledge:
                 if chr(ch) in word:
                     count1 = count1 + 1
             counts[chr(ch)] = count1
+
+        # calculate score for a word
         def wsum(word):
             # by using set, we eliminate duplicates
             return sum(set(counts[c] for c in word))
-        sum_list = [wsum(w) for w in valids]
+
+        # prepare list of sums for all words in word_list
+        sum_list = [wsum(w) for w in word_list]
         maxindexes = [i for i, x in enumerate(sum_list) if x == max(sum_list)]
-        return valids[random.choice(maxindexes)]
+        #return max or random choice if more than one max
+        return word_list[random.choice(maxindexes)]
                 
-        
 
     # figure out word marked active with largest score and return
-    def nextGuess(self, valids):
+    def nextGuess(self, valids, all_words):
+        wc_guess = self.best_wc_guess(valids, all_words)
         print('Evaluating ', len(valids), 'possibilities')
         if len(valids) > 400:
-            print('Using word count method')
-            return self.nextGuess2(valids)
+            print('Using word count method only')
+            return self.best_wc_guess(valids, all_words)
         else:
             print('Using dynamic max elimination method')
         topscore = 0
         topwords = []
+        # add best wc guess to list
+        valids.append(wc_guess)
         for word in valids:
-            s = self.score(word, valids)
+            s = self.calc_escore(word, valids)
             if s == topscore:
                 topwords.append(word)
             elif s > topscore:
@@ -164,5 +178,5 @@ class WordKnowledge:
             print('Error in selecting guess')
         topword = random.choice(topwords)
         print('Next guess is ', topword)
-        print('word count method would have returned ', self.nextGuess2(valids))
+        print('word count method would have returned ', wc_guess)
         return topword

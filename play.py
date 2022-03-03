@@ -1,4 +1,4 @@
-import wordle_solve, json
+import wordle_solve, json, copy
 
 # word list - load in from json file
 # f = open('bigdictionary.json')
@@ -6,12 +6,13 @@ f = open('wordledictionary.json')
 wordList = json.load(f)
 f.close
 
-# initialize validWords list - dictionary with words of proper length
+# initialize all_words and valid_words lists - dictionary with words of proper length
 # and with T or F indicating whether word valid with current Knowledge
-validWords = []
+all_words = []
 for word in wordList:
     if len(word) == wordle_solve.WORDLEN and word.isalpha():
-        validWords.append(word)
+        all_words.append(word)
+valid_words = copy.deepcopy(all_words)
 
 # initialize knowledge
 
@@ -35,9 +36,10 @@ while True:
         removeword = input()
         if removeword == '':
             removeword = guess
-        validWords.remove(removeword)
+        valid_words.remove(removeword)
+        all_words.remove(removeword)
     if selection == 1:
-        guess = knowledge.nextGuess(validWords)
+        guess = knowledge.nextGuess(valid_words, all_words)
         print('New guess is ', guess)
     if selection == 2:
         print('Word guess: ')
@@ -52,5 +54,5 @@ while True:
             print('Error in input')
             continue
         knowledge.update_knowledge(guess, feedback)
-        validWords = knowledge.getUpdatedWordList(validWords)
+        valid_words = knowledge.getUpdatedWordList(valid_words)
         print('Feedback processed')
