@@ -1,4 +1,5 @@
 import copy
+from operator import index
 
 WORDLEN = 5
 
@@ -6,67 +7,121 @@ WORDLEN = 5
 
 class Trie(object):
 
+    index = 0
+
     def __init__(self):
-        self.value = ''
-        self.level = 0
+        self.index = Trie.index
+        if self.index == 0:
+            self.value = "ROOT"
+        else:
+            self.value = ""
+        Trie.index = Trie.index + 1
+        self.parent = {}
         self.child = {}
         self.wordEnd = False
-        self.leaf = True
 
     def __repr__(self):
-        s = "{value: " + self.value + ", "
-        s = s + "{level: " + str(self.level) + ", "
-        s = s + "{wordEnd: " + str(self.wordEnd) + ", "
-        s = s + "{leaf: " + str(self.leaf) + ", "
-        s = s + "{child: " + str(self.child) + "}"
+        s = "{index: " + str(self.index) + ", "
+        s = s + "value: " + self.value + ", "
+        s = s + "wordEnd: " + str(self.wordEnd) + ", "
+        s = s + "child#: " + str(len(self.child)) + "}"
         return s
     
-
     # Insert a word using self as the root
     def insert(self, word):
-        # if word is empty, set word end and we're done
-        if word == "":
-            self.wordEnd = True
-        # if already have child with that key, return insertion of remainder of word
-        elif word[0] in self.child.keys():
-            self.child[word[0]].insert(word[1:])
-        # otherwise, add a new node for letter and make same recursive call for rest of word
+        if len(word) == 0:
+            return False
         else:
-            self.child[word[0]] = Trie()
-            self.child[word[0]].value = word[0]
-            self.child[word[0]].level = self.level + 1
-            self.leaf = False
-            self.child[word[0]].insert(word[1:])
+            curPoint = self
+            for i in range(0, len(word)):
+                if word[i] not in curPoint.child:
+                    newChild = Trie()
+                    newChild.value = word[i]
+                    newChild.parent = curPoint
+                    newChild.wordEnd = False
+                    curPoint.child[word[i]] = newChild
+                curPoint = curPoint.child[word[i]]                    
+            curPoint.leaf = True
+            curPoint.wordEnd = True
+            return True
 
+    # Delete a word from child of self
+    # Returns True if deleted and False if not found
+    def delete(self, word):
+        # this part is identical to search
+        if len(word) == 0:
+            return False
+        else:
+            curPoint = self
+            print("curPoint 1 ", curPoint)
+            for i in range(0, len(word)):
+                if word[i] not in curPoint.child:
+                    return False
+                else:
+                    curPoint = curPoint.child[word[i]]
+                    print("curPoint 2 ", curPoint)
+            if not curPoint.wordEnd:
+                return False
+            # at this point we've found the word if curPoint.wordEnd is true
+            # first check if this node has children. If so, just delete wordEnd
+            else:
+                if len(curPoint.child) > 0:
+                    curPoint.wordEnd = False
+                    return True
+                else:
+                    # we need to go up deleting child nodes until we find another
+                    # wordEnd or one with more than 0 siblings
+                    print("curPoint 3 ", curPoint)
+                    while True:
+                        parent = curPoint.parent
+                        sibs = len(curPoint.parent.child) 
+                        print("deleting curPoint 4 ", curPoint)
+                        del parent.child[curPoint.value]
+                        if sibs > 1 or parent == self or parent.wordEnd:
+                            break
+                        curPoint = parent      
+
+    
+    # search through trie to find word return False or True
     def search(self, word):
         if len(word) == 0:
-            return self.wordEnd
+            return False
         else:
-            if word[0] not in self.child:
-                return False
-            else:
-                return self.child[word[0]].search(word[1:])
+            curPoint = self
+            for i in range(0, len(word)):
+                if word[i] not in curPoint.child:
+                    return False
+                else:
+                    curPoint = curPoint.child[word[i]]
+            return curPoint.wordEnd
     
-    # recursively travel through Trie, returning a list of all words (actually suffixes)
-    # that are defined in the Trie
-    #   There are two cases:
-    #       - leaf - return an empty list
-    #       - not leaf - 
-    #           - for each letter key in the current object:
-    #               - create a list of words by pre-pending the current letter key
-    #                 to the list of words returned by recursive call to this method for the Trie
-    #                 linked to the letter key
-    #           - combine all these lists together and return
-    def returnWords(self):
-        if self.leaf:
+    # recursively search through trie to find record with specific index
+    # returns -1 if no such record
+    def getIndex(self, idx):
+        if self.index == idx:
+            return self
+        elif len(self.child) == 0:
+            return -1
+        else:
+            for c in self.child:
+                x = self.child[c].getIndex(idx)
+                if x != -1:
+                    return x
+            return -1
+
+    # recursively find suffixes pointed to by child record
+    # of self, building list of all words and returning that
+    def allWords(self):
+        if len(self.child) == 0:
             return []
         else:
             returnVal = []
-            for k in self.child.keys():
-                rsuffixes = self.child[k].returnWords()
+            for k in self.child:
+                rsuffixes = self.child[k].allWords()
                 # create list expansion with k and each member of rsuffixes
                 nsuffixes = [k + r for r in rsuffixes]
                 # if we're at end of word, also add this letter
+                # since this will be end of a new word
                 if self.child[k].wordEnd:
                     nsuffixes = nsuffixes + [k]
                 returnVal = returnVal + nsuffixes
@@ -84,38 +139,4 @@ class Trie(object):
                     self.child[k].delLetter(ltr)
 
     
-    # delete all child words WITHOUT a containing letter
-    def delFixLetter(self, ltr):
-        pass
-            
-            
-            for d in self.child[c].keys() 
-
-
-        for k in dict(self.child).keys():
-            if k == ltr:
-                return 
-            else:
-                self.child[k].delFixLetter(ltr)
-        
-        
-            if self.value == ltr:
-                return
-            else:
-                del self
-            return
-        else:
-            for k in dict(self.child).keys():
-                if k != ltr:
-                    return self.child[k].delFixLetter()
-                else:
-                    return
-
-            return self.delFixLetter(ltr)
-
-
-
-
     
-
-
