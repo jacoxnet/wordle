@@ -1,9 +1,7 @@
-from wordletrie import Trie
+from wordletrie import Trie, WORDLEN
 import json, copy
 
 from listofwords import SOLUTIONS
-
-WORDLEN = 5
 
 # create root TRIE and insert all words
 

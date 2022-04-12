@@ -1,5 +1,4 @@
 import copy
-from operator import index
 
 WORDLEN = 5
 
@@ -48,53 +47,102 @@ class Trie(object):
     # Delete a word from child of self
     # Returns True if deleted and False if not found
     def delete(self, word):
-        # this part is identical to search
-        if len(word) == 0:
+        result = self.search(word)
+        if result == -1:
             return False
         else:
-            curPoint = self
-            print("curPoint 1 ", curPoint)
-            for i in range(0, len(word)):
-                if word[i] not in curPoint.child:
-                    return False
-                else:
-                    curPoint = curPoint.child[word[i]]
-                    print("curPoint 2 ", curPoint)
-            if not curPoint.wordEnd:
-                return False
-            # at this point we've found the word if curPoint.wordEnd is true
+            # at this point we've found the word and result.wordEnd is true
             # first check if this node has children. If so, just delete wordEnd
+            if len(result.child) > 0:
+                result.wordEnd = False
+                return True
             else:
-                if len(curPoint.child) > 0:
-                    curPoint.wordEnd = False
-                    return True
-                else:
-                    # we need to go up deleting child nodes until we find another
-                    # wordEnd or one with more than 0 siblings
-                    print("curPoint 3 ", curPoint)
-                    while True:
-                        parent = curPoint.parent
-                        sibs = len(curPoint.parent.child) 
-                        print("deleting curPoint 4 ", curPoint)
-                        del parent.child[curPoint.value]
-                        if sibs > 1 or parent == self or parent.wordEnd:
-                            break
-                        curPoint = parent      
+                # we need to go up deleting child nodes until we find another
+                # wordEnd or one with other siblings
+                while True:
+                    parent = result.parent
+                    sibs = len(result.parent.child) 
+                    del parent.child[result.value]
+                    if sibs > 1 or parent == self or parent.wordEnd:
+                        break
+                    result = parent      
+            return True
 
-    
-    # search through trie to find word return False or True
+
+    # search through trie to find word 
+    # if not found, return -1
+    # if found return node pointing to end of word
     def search(self, word):
         if len(word) == 0:
-            return False
+            return -1
         else:
             curPoint = self
             for i in range(0, len(word)):
                 if word[i] not in curPoint.child:
-                    return False
+                    return -1
                 else:
                     curPoint = curPoint.child[word[i]]
-            return curPoint.wordEnd
+            if not curPoint.wordEnd:
+                return -1
+            else:
+                return curPoint
     
+    # delete all child words containing ltr
+    # go through children and delete any nodes starting with letter
+    # if not starting with letter, recursively call delLetter on children
+    # returns False if nothing deleted, True othewise
+
+    def delLetter(self, ltr):
+        returnVal = False
+        curPoint = self
+        # necessary to copy this because in loop we're modifying curPoint.child
+        for c in copy.copy(curPoint.child):
+            if c == ltr:
+                del curPoint.child[c]
+                returnVal = True
+            else:
+                x = curPoint.child[c].delLetter(ltr)
+                if x:
+                    returnVal = True
+        return returnVal
+
+    # delete all child words that DO NOT contain letter
+    def delNLetter(self, ltr):
+        returnVal = False
+        curPoint = self
+        for c in copy.copy(curPoint.child):
+            # if we see letter, no need to go further into children of that one
+            if c == ltr:
+                continue
+            # if we've reached word end without letter, delete this one
+            elif curPoint.child[c].wordEnd:
+                del curPoint.child[c]
+                returnVal = True
+            else:
+                # otherwise, apply this method to child
+                x = curPoint.child[c].delNLetter(ltr)
+                if x:
+                    returnVal = True
+        return returnVal
+
+    # delete all child words that DO NOT contain letter at nth child position (0 is immediate child)
+    def delNNLetter(self, ltr, posn):
+        returnVal = False
+        curPoint = self
+        if posn == 0:
+            for c in copy.copy(curPoint.child):
+                if c != ltr:
+                    del curPoint.child[c]
+                    returnVal = True
+        # if posn not 0, apply this method to children
+        else:
+            for c in copy.copy(curPoint.child):
+                x = curPoint.child[c].delNNLetter(ltr, posn - 1)
+                if x:
+                    returnVal = True
+        return returnVal
+        
+
     # recursively search through trie to find record with specific index
     # returns -1 if no such record
     def getIndex(self, idx):
@@ -126,17 +174,3 @@ class Trie(object):
                     nsuffixes = nsuffixes + [k]
                 returnVal = returnVal + nsuffixes
             return returnVal
-
-    # delete all child words containing ltr
-    def delLetter(self, ltr):
-        if self.leaf:
-            return []
-        else:
-            for k in dict(self.child).keys():
-                if k == ltr:
-                    del self.child[k]
-                else:
-                    self.child[k].delLetter(ltr)
-
-    
-    
