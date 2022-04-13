@@ -104,8 +104,27 @@ class Trie(object):
                 if x:
                     returnVal = True
         return returnVal
+    
+    # delete all child words containing ltr in position posn
+    # returns True if something deleted, False otherwise
+    def delLetterPos(self, ltr, pos):
+        returnVal = False
+        curPoint = self
+        if pos == 0:
+            for c in copy.copy(curPoint.child):
+                if c == ltr:
+                    del curPoint.child[c]
+                    returnVal = True
+        # if posn not 0, apply this method to children
+        else:
+            for c in copy.copy(curPoint.child):
+                x = curPoint.child[c].delLetterPos(ltr, pos - 1)
+                if x:
+                    returnVal = True
+        return returnVal
 
     # delete all child words that DO NOT contain letter at any position
+    # returns True if anything deleted othwerise False
     def delNLetter(self, ltr):
         returnVal = False
         curPoint = self
@@ -125,18 +144,18 @@ class Trie(object):
         return returnVal
 
     # delete all child words that DO NOT contain letter at nth child position (0 is immediate child)
-    def delNNLetter(self, ltr, posn):
+    def delNLetterPos(self, ltr, pos):
         returnVal = False
         curPoint = self
-        if posn == 0:
+        if pos == 0:
             for c in copy.copy(curPoint.child):
                 if c != ltr:
                     del curPoint.child[c]
                     returnVal = True
-        # if posn not 0, apply this method to children
+        # if pos not 0, apply this method to children
         else:
             for c in copy.copy(curPoint.child):
-                x = curPoint.child[c].delNNLetter(ltr, posn - 1)
+                x = curPoint.child[c].delNLetterPos(ltr, pos - 1)
                 if x:
                     returnVal = True
         return returnVal

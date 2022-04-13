@@ -1,5 +1,5 @@
 import json
-import copy
+from copy import copy, deepcopy
 import random
 
 # length of words we're working with
