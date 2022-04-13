@@ -99,13 +99,18 @@ class WordKnowledge:
     #   G - green (letter correct in proper position)
     #   Y - yellow (letter correc in wrong position)
     #   B - black or shadow (letter not in word)
+    # because there can be duplicate letters, when we find a match we
+    # replace the letter in the secret with space so it isn't found again
     def color_calc(self, guess, secret):
         returnVal = ""
+        nsecret = secret
         for i in range(len(guess)):
-            if guess[i] == secret[i]:
+            if guess[i] == nsecret[i]:
                 returnVal = returnVal + 'G'
+                nsecret = nsecret.replace(nsecret[i], " ", 1)
             elif guess[i] in secret:
                 returnVal = returnVal + 'Y'
+                nsecret = nsecret.replace(nsecret[i], " ", 1)
             else:
                 returnVal = returnVal + 'B'
         return returnVal

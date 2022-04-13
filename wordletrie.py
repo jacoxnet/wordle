@@ -91,7 +91,6 @@ class Trie(object):
     # go through children and delete any nodes starting with letter
     # if not starting with letter, recursively call delLetter on children
     # returns False if nothing deleted, True othewise
-
     def delLetter(self, ltr):
         returnVal = False
         curPoint = self
@@ -106,7 +105,7 @@ class Trie(object):
                     returnVal = True
         return returnVal
 
-    # delete all child words that DO NOT contain letter
+    # delete all child words that DO NOT contain letter at any position
     def delNLetter(self, ltr):
         returnVal = False
         curPoint = self
@@ -143,6 +142,7 @@ class Trie(object):
         return returnVal
         
 
+    # return trie node given index
     # recursively search through trie to find record with specific index
     # returns -1 if no such record
     def getIndex(self, idx):
@@ -157,6 +157,7 @@ class Trie(object):
                     return x
             return -1
 
+    # return list of all words in trie
     # recursively find suffixes pointed to by child record
     # of self, building list of all words and returning that
     def allWords(self):
