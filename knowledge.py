@@ -8,7 +8,7 @@ class Knowledge:
         for word in SOLUTIONS:
             self.trie.insert(word)
         self.mandatory = []
-        self.solved = [WORDLEN]
+        self.solved = {}
 
 
     def __repr__(self):
