@@ -84,20 +84,17 @@ class Knowledge:
         # for each secret word, assume it is the solution and then calculate
         # a score for each guess word
         secretWords = self.allWords()
-        #if len(secretWords) > 100:
-        #    secretWords = random.sample(secretWords, 100)
-        #    fakeK = Knowledge(secretWords)
-        #    fakeK.mandatory = copy.copy(self.mandatory)
-        #    fakeK.solved = copy.copy(self.solved)
-        #else:
-        fakeK = copy.copy(self)
+        if len(secretWords) > 100:
+            secretWords = random.sample(secretWords, 100)
+            fakeK = Knowledge(secretWords)
+            fakeK.mandatory = copy.copy(self.mandatory)
+            fakeK.solved = copy.copy(self.solved)
+        else:
+            fakeK = copy.copy(self)
         for i in range(0, len(secretWords)):
             print(i, '/', len(secretWords))
             for guessWord in Knowledge.guessWords:
-                #if Knowledge.letterOverlap(guessWord, secretWords[i]) < 3:
-                #    Knowledge.guessWords[guessWord] = 10000
-                #    continue
-                fakeFakeK = copy.copy(fakeK)
+                fakeFakeK = copy.deepcopy(fakeK)
                 fakeResponse = Knowledge.colorCalc(guessWord, secretWords[i])
                 fakeFakeK.updateKnowledge(guessWord, fakeResponse)
                 Knowledge.guessWords[guessWord] = Knowledge.guessWords[guessWord] + len(fakeK.allWords())
