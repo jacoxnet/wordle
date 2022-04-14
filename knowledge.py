@@ -1,3 +1,4 @@
+import time
 import copy
 import random
 from wordletrie import Trie, WORDLEN
@@ -84,23 +85,25 @@ class Knowledge:
         # for each secret word, assume it is the solution and then calculate
         # a score for each guess word
         secretWords = self.allWords()
-        if len(secretWords) > 100:
-            secretWords = random.sample(secretWords, 100)
-            fakeK = Knowledge(secretWords)
-            fakeK.mandatory = copy.copy(self.mandatory)
-            fakeK.solved = copy.copy(self.solved)
-        else:
-            fakeK = copy.copy(self)
-        for i in range(0, len(secretWords)):
-            print(i, '/', len(secretWords))
+        #if len(secretWords) > 50:
+        #    secretWords = random.sample(secretWords, 50)
+        numWords = len(secretWords)
+        start = time.time()
+        for i in range(0, numWords):
+            print(i, '/', numWords)
+            print("elapsed seconds ", time.time() - start)
             for guessWord in Knowledge.guessWords:
-                fakeFakeK = copy.deepcopy(fakeK)
+                fakeK = Knowledge(secretWords)
+                fakeK.mandatory = copy.deepcopy(self.mandatory)
+                fakeK.solved = copy.deepcopy(self.solved)
                 fakeResponse = Knowledge.colorCalc(guessWord, secretWords[i])
-                fakeFakeK.updateKnowledge(guessWord, fakeResponse)
+                fakeK.updateKnowledge(guessWord, fakeResponse)
                 Knowledge.guessWords[guessWord] = Knowledge.guessWords[guessWord] + len(fakeK.allWords())
-                del fakeFakeK
-        del fakeK
-        minKey = min(Knowledge.guessWords, key=Knowledge.guessWords.get)
+                del fakeK
+        minKey = {}
+        for i in range(0, 10):
+            minKey[i] = min(Knowledge.guessWords, key=Knowledge.guessWords.get)
+            del Knowledge.guessWords[minKey[i]]
         return minKey
         
 
