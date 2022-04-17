@@ -17,11 +17,12 @@ class Trie(object):
             self.value = "ROOT"
         else:
             self.value = ""
+        Trie.Node[self.index] = self
         Trie.index = Trie.index + 1
         self.parent = {}
         self.child = {}
         self.level = -1
-        Trie.Node[self.index] = self
+        
 
     def __repr__(self):
         s = "{index: " + str(self.index) + ", "
@@ -31,13 +32,13 @@ class Trie(object):
         return s
     
     # Make new node
-    def makeNewNode(self, letter):
-        print('create new child for ', letter)
+    def makeNewNode(self, newLetter):
+        print('create new child for ', newLetter)
         newChild = Trie()
-        newChild.value = letter
-        newChild.parent[letter] = self
+        newChild.value = newLetter
+        newChild.parent[self.value] = self
         newChild.level = self.level + 1
-        self.child[letter] = newChild
+        self.child[newLetter] = newChild
         Trie.Node[self.index] = newChild
 
     # Insert a letter below the current node 
@@ -47,17 +48,23 @@ class Trie(object):
         if letter in self.child:
             return True
         elif self.value == "ROOT":
+            # there are no siblings for ROOT to check for
             self.makeNewNode(letter)
         else:
             # find and use children of siblings if appropriate
-            sibChild = None
-            for sibling in self.parent[letter].child.keys():
-                if letter in self.parent[letter].child[sibling].child:
-                    sibChild = self.parent[letter].child[sibling].child[letter]
-                    self.child[letter] = sibChild[letter]
-                    sibChild.parent[letter] = self
-                    break
-            if not sibChild:
+            myParents = self.parent.keys()
+            niece = None
+            for p in myParents:
+                mySiblings = self.parent[p].child.keys() - self.value
+                for s in mySiblings:
+                    myNieces = self.parent[p].child[s].child.keys()
+                    if letter in myNieces:
+                        niece = self.parent[p].child[s].child[letter]
+                        self.child[letter] = niece
+                        niece.parent[self.value] = self
+                        break
+            # if we didn't find a niece make a new node
+            if not niece:
                 self.makeNewNode(letter)
         return True
 
@@ -82,34 +89,30 @@ class Trie(object):
             return False
         else:
             # at this point we've found the word 
-            # we need to go up deleting child nodes until we 
-            # get to self or find one with other siblings
+            # we need to go down deleting child nodes as long
+            # as there are no 
             while True:
-                parent = result.parent
-                sibs = len(result.parent.child) 
-                del parent.child[result.value]
-                if sibs > 1 or parent == self:
+                parents = result.parent
+                del parents[result.value].child[result.value]
+                if len(parents) > 1 or parents[result.value] == self:
                     break
-                result = parent      
+                result = parents[result.value]     
             return True
 
     # search through trie to find word 
     # if not found, return -1
     # if found return node pointing to end of word
     def search(self, word):
-        if len(word) == WORDLEN:
+        if len(word) != WORDLEN:
             return -1
         else:
             curPoint = self
-            for i in range(0, WORDLEN):
-                if word[i] not in curPoint.child:
+            for letter in word:
+                if letter not in curPoint.child:
                     return -1
                 else:
-                    curPoint = curPoint.child[word[i]]
-            if curPoint.level != WORDLEN:
-                return -1
-            else:
-                return curPoint
+                    curPoint = curPoint.child[letter]
+            return curPoint
     """
     # delete all child words containing ltr
     # go through children and delete any nodes starting with letter
