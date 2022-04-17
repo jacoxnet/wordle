@@ -39,33 +39,21 @@ class Trie(object):
         newChild.parent[self.value] = self
         newChild.level = self.level + 1
         self.child[newLetter] = newChild
-        Trie.Node[self.index] = newChild
+        Trie.Node[newChild.index] = newChild
 
     # Insert a letter below the current node 
-    def insertLtr(self, letter):
-        if len(letter) != 1:
+    def insertLtr(self, newLetter):
+        if len(newLetter) != 1:
             return False
-        if letter in self.child:
+        if newLetter in self.child:
             return True
-        elif self.value == "ROOT":
-            # there are no siblings for ROOT to check for
-            self.makeNewNode(letter)
-        else:
-            # find and use children of siblings if appropriate
-            myParents = self.parent.keys()
-            niece = None
-            for p in myParents:
-                mySiblings = self.parent[p].child.keys() - self.value
-                for s in mySiblings:
-                    myNieces = self.parent[p].child[s].child.keys()
-                    if letter in myNieces:
-                        niece = self.parent[p].child[s].child[letter]
-                        self.child[letter] = niece
-                        niece.parent[self.value] = self
-                        break
-            # if we didn't find a niece make a new node
-            if not niece:
-                self.makeNewNode(letter)
+        print('create new child for ', newLetter)
+        newChild = Trie()
+        newChild.value = newLetter
+        newChild.parent[self.value] = self
+        newChild.level = self.level + 1
+        self.child[newLetter] = newChild
+        Trie.Node[newChild.index] = newChild
         return True
 
     # Insert a word using self as the root
@@ -98,11 +86,8 @@ class Trie(object):
                 if len(children) > 0:
                     break
                 del parents[word[i]]
-                curPoint = 
                 if len(parents) > 0:
                     break
-                curPoint = 
-                del 
                 if len(parents) > 1 or parents[result.value] == self:
                     break
                 result = parents[result.value]     
@@ -196,22 +181,8 @@ class Trie(object):
                     returnVal = True
         return returnVal
         
-
-    # return trie node given index
-    # recursively search through trie to find record with specific index
-    # returns -1 if no such record
-    def getIndex(self, idx):
-        if self.index == idx:
-            return self
-        elif len(self.child) == 0:
-            return -1
-        else:
-            for c in self.child:
-                x = self.child[c].getIndex(idx)
-                if x != -1:
-                    return x
-            return -1
 """
+
     # return list of all words in trie
     # recursively find suffixes pointed to by child record
     # of self, building list of all words and returning that
@@ -226,7 +197,7 @@ class Trie(object):
                 nsuffixes = [k + r for r in rsuffixes]
                 # if we're at end of word, also add this letter
                 # since this will be end of a new word
-                if self.child[k].level == WORDLEN:
+                if self.child[k].level == WORDLEN - 1:
                     nsuffixes = nsuffixes + [k]
                 returnVal = returnVal + nsuffixes
             return returnVal
