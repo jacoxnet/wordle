@@ -31,24 +31,27 @@ class Knowledge:
     #   G - green (letter correct in proper position)
     #   Y - yellow (letter correc in wrong position)
     #   B - black or shadow (letter not in word)
+    #   because of serial nature of this inquiry, we need to process in order of G, Y, B
     def updateKnowledge(self, guess, response):
-        for i in range(len(response)):
-            if response[i] == 'G':
-                # delete all solution words without this letter in this posn
-                self.trie.delNLetterPos(guess[i], i)
-                # updated solved dict
-                self.solved[i] = guess[i]
-            if response[i] == 'Y':
-                # delete all solution words without this letter in some position
-                self.trie.delNLetter(guess[i])
-                # update mandatory list
-                self.mandatory.add(guess[i])
-            if response[i] == 'B':
-                if guess[i] in self.mandatory or guess[i] in self.solved.values():
-                    # mandatory or solved letter - we can only delete words with this guess letter at this pos
-                    self.trie.delLetterPos(guess[i], i)
-                else:
-                    self.trie.delLetter(guess[i])
+        tresp = {'G': [], 'Y': [], 'B': []}
+        for i in range(0, len(response)):
+            tresp[response[i]].append(i)
+        for i in tresp['G']:
+            # delete all solution words without this letter in this posn
+            self.trie.delNLetterPos(guess[i], i)
+            # updated solved dict
+            self.solved[i] = guess[i]
+        for i in tresp["Y"]:
+            # delete all solution words without this letter in some position
+            self.trie.delNLetter(guess[i])
+            # update mandatory list
+            self.mandatory.add(guess[i])
+        for i in tresp["B"]:
+            if guess[i] in self.mandatory or guess[i] in self.solved.values():
+                # mandatory or solved letter - we can only delete words with this guess letter at this pos
+                self.trie.delLetterPos(guess[i], i)
+            else:
+                self.trie.delLetter(guess[i])
 
 
     # take guess and secret word and calculate a color response

@@ -19,7 +19,7 @@ class Trie(object):
             self.value = ""
         Trie.Node[self.index] = self
         Trie.index = Trie.index + 1
-        self.parent = {}
+        self.parent = None
         self.child = {}
         self.level = -1
         
@@ -30,16 +30,6 @@ class Trie(object):
         s = s + "level: " + str(self.level) + ", "
         s = s + "child#: " + str(len(self.child)) + "}"
         return s
-    
-    # Make new node
-    def makeNewNode(self, newLetter):
-        print('create new child for ', newLetter)
-        newChild = Trie()
-        newChild.value = newLetter
-        newChild.parent[self.value] = self
-        newChild.level = self.level + 1
-        self.child[newLetter] = newChild
-        Trie.Node[newChild.index] = newChild
 
     # Insert a letter below the current node 
     def insertLtr(self, newLetter):
@@ -50,7 +40,7 @@ class Trie(object):
         print('create new child for ', newLetter)
         newChild = Trie()
         newChild.value = newLetter
-        newChild.parent[self.value] = self
+        newChild.parent = self 
         newChild.level = self.level + 1
         self.child[newLetter] = newChild
         Trie.Node[newChild.index] = newChild
@@ -80,18 +70,21 @@ class Trie(object):
             # we need to go up deleting child nodes as long
             # as there are no chidlren and only one parent
             curPoint = result
-            for i in range(WORDLEN - 1, -1, -1):
-                parents = curPoint.parent
-                children = curPoint.child
-                if len(children) > 0:
+            while curPoint != self:
+                print('curPoint', curPoint.value)
+                parent = curPoint.parent
+                print('parent', parent.value)
+                # delete the child link to this node in this node's parent
+                print('deleteing ', parent.child[curPoint.value].value)
+                del parent.child[curPoint.value]
+                print ('len', len(parent.child))
+                if len(parent.child) == 0:
+                    # if there are no other children of parent, move to parent link    
+                    curPoint = parent
+                else:
+                    # otherwise, we're done
                     break
-                del parents[word[i]]
-                if len(parents) > 0:
-                    break
-                if len(parents) > 1 or parents[result.value] == self:
-                    break
-                result = parents[result.value]     
-            return True
+        return True
 
     # search through trie to find word 
     # if not found, return -1
@@ -107,7 +100,7 @@ class Trie(object):
                 else:
                     curPoint = curPoint.child[letter]
             return curPoint
-    """
+    
     # delete all child words containing ltr
     # go through children and delete any nodes starting with letter
     # if not starting with letter, recursively call delLetter on children
@@ -115,7 +108,6 @@ class Trie(object):
     def delLetter(self, ltr):
         returnVal = False
         curPoint = self
-        # necessary to copy this because in loop we're modifying curPoint.child
         for c in copy.copy(curPoint.child):
             if c == ltr:
                 del curPoint.child[c]
@@ -153,8 +145,8 @@ class Trie(object):
             # if we see letter, no need to go further into children of that one
             if c == ltr:
                 continue
-            # if we've reached word end without letter, delete this one
-            elif curPoint.child[c].wordEnd:
+            # if no further childen, we've reached word end without letter, delete this one
+            elif len(curPoint.child[c].child) == 0:
                 del curPoint.child[c]
                 returnVal = True
             else:
@@ -181,7 +173,26 @@ class Trie(object):
                     returnVal = True
         return returnVal
         
-"""
+    # return count of all child words containing ltr in posn
+    def countLetter(self, ltr, pos):
+        curPoint = self
+        count = 0
+        if curPoint.level == WORDLEN - 1:
+            return 0
+        for c in curPoint.child:
+            if curPoint.child[c].level == pos and ltr == curPoint.child[c].value:
+                count = count + curPoint.child[c].countWords()
+        return count
+
+    def countWords(self):
+        curPoint = self
+        count = 0
+        if curPoint.level == WORDLEN - 1:
+            return 1
+        for c in curPoint.child:
+            count = count + curPoint.child[c].countWords()
+        return count
+
 
     # return list of all words in trie
     # recursively find suffixes pointed to by child record
