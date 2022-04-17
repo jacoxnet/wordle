@@ -89,11 +89,20 @@ class Trie(object):
             return False
         else:
             # at this point we've found the word 
-            # we need to go down deleting child nodes as long
-            # as there are no 
-            while True:
-                parents = result.parent
-                del parents[result.value].child[result.value]
+            # we need to go up deleting child nodes as long
+            # as there are no chidlren and only one parent
+            curPoint = result
+            for i in range(WORDLEN - 1, -1, -1):
+                parents = curPoint.parent
+                children = curPoint.child
+                if len(children) > 0:
+                    break
+                del parents[word[i]]
+                curPoint = 
+                if len(parents) > 0:
+                    break
+                curPoint = 
+                del 
                 if len(parents) > 1 or parents[result.value] == self:
                     break
                 result = parents[result.value]     
