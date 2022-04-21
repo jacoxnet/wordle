@@ -37,7 +37,6 @@ class Trie(object):
             return False
         if newLetter in self.child:
             return True
-        print('create new child for ', newLetter)
         newChild = Trie()
         newChild.value = newLetter
         newChild.parent = self 
@@ -71,13 +70,9 @@ class Trie(object):
             # as there are no chidlren and only one parent
             curPoint = result
             while curPoint != self:
-                print('curPoint', curPoint.value)
                 parent = curPoint.parent
-                print('parent', parent.value)
                 # delete the child link to this node in this node's parent
-                print('deleteing ', parent.child[curPoint.value].value)
                 del parent.child[curPoint.value]
-                print ('len', len(parent.child))
                 if len(parent.child) == 0:
                     # if there are no other children of parent, move to parent link    
                     curPoint = parent
@@ -177,12 +172,21 @@ class Trie(object):
     def countLetter(self, ltr, pos):
         curPoint = self
         count = 0
-        if curPoint.level == WORDLEN - 1:
+        # no words below if we're at or greater than WORDLEN
+        if curPoint.level >= WORDLEN:
             return 0
-        for c in curPoint.child:
-            if curPoint.child[c].level == pos and ltr == curPoint.child[c].value:
-                count = count + curPoint.child[c].countWords()
-        return count
+        # if we're at level of parent above position, countwords
+        if curPoint.level == pos - 1:
+            for c in curPoint.child:
+                if ltr == curPoint.child[c].value:
+                    count = count + curPoint.child[c].countWords()
+            return count
+        else:
+            # countLetters in next level of children 
+            for c in curPoint.child:
+                count = count + curPoint.child[c].countLetter(ltr, pos)
+            return count
+
 
     def countWords(self):
         curPoint = self

@@ -8,7 +8,7 @@ class Knowledge:
 
     # structure for scoring guess words
     guessWords = {}
-    for word in ALLWORDS:
+    for word in SOLUTIONS:
         guessWords[word] = 0
 
     def __init__(self, wordList):
@@ -62,52 +62,60 @@ class Knowledge:
     # replace the letter in the secret with space so it isn't found again
     @staticmethod
     def colorCalc(guess, secret):
-        returnVal = ""
-        nsecret = secret
+        listSecret = [letter for letter in secret]
+        response = WORDLEN * [' ']
         for i in range(len(guess)):
-            if guess[i] == nsecret[i]:
-                returnVal = returnVal + 'G'
-                nsecret = nsecret.replace(nsecret[i], " ", 1)
-            elif guess[i] in nsecret:
-                returnVal = returnVal + 'Y'
-                nsecret = nsecret.replace(nsecret[i], " ", 1)
-            else:
-                returnVal = returnVal + 'B'
-        return returnVal
+            if guess[i] == listSecret[i]:
+                response[i] = 'G'
+                listSecret[i] = ' '
+        for i in range(len(guess)):
+            if guess[i] in listSecret:
+                response[i] = 'Y'
+                listSecret = [' ' if item == guess[i] else item for item in listSecret]
+        response = ['B' if item == ' ' else item for item in response]
+        return ''.join(response)
 
     # return the number of letters in common between two words
     @staticmethod
     def letterOverlap(word1, word2):
         return len(set(word1).intersection(set(word2)))
 
+    # given a guessword, returns the average size of resulting groupings
+    # that guess word could divide the solution words
+    rdict = {}
+    
+    def scoreGuess(self, guessword):
+        rdict = {}
+        for secretword in self.allWords():
+            result = Knowledge.colorCalc(guessword, secretword)
+            if result in rdict:
+                rdict[result] = rdict[result] + 1
+            else:
+                rdict[result] = 1
+        aveGSize = sum(rdict.values())/len(rdict)
+        Knowledge.rdict = rdict
+        return aveGSize
+
+    def allMins(self, dictWords):
+        # find minimum value
+        mm = min(dictWords.values())
+        #create list of all minimum words
+        rv = [k for k in dictWords.keys() if dictWords[k] == mm]
+        # create smaller list of secretwords in earlier list
+        sv = [secretWord for secretWord in rv if self.trie.search(secretWord) != -1]
+        # return only secret words if there are some
+        if len(sv) > 0:
+            return sv
+        else:
+            return rv
 
     def getBestGuess(self):
-        # zero out score
+        if len(self.allWords()) == 1:
+            return self.allWords()
         for word in Knowledge.guessWords:
-            Knowledge.guessWords[word] = 0
-        # for each secret word, assume it is the solution and then calculate
-        # a score for each guess word
-        secretWords = self.allWords()
-        #if len(secretWords) > 50:
-        #    secretWords = random.sample(secretWords, 50)
-        numWords = len(secretWords)
-        start = time.time()
-        for i in range(0, numWords):
-            print(i, '/', numWords)
-            print("elapsed seconds ", time.time() - start)
-            for guessWord in Knowledge.guessWords:
-                fakeK = Knowledge(secretWords)
-                fakeK.mandatory = copy.deepcopy(self.mandatory)
-                fakeK.solved = copy.deepcopy(self.solved)
-                fakeResponse = Knowledge.colorCalc(guessWord, secretWords[i])
-                fakeK.updateKnowledge(guessWord, fakeResponse)
-                Knowledge.guessWords[guessWord] = Knowledge.guessWords[guessWord] + len(fakeK.allWords())
-                del fakeK
-        minKey = {}
-        for i in range(0, 10):
-            minKey[i] = min(Knowledge.guessWords, key=Knowledge.guessWords.get)
-            del Knowledge.guessWords[minKey[i]]
-        return minKey
+            aveGSize =  self.scoreGuess(word)
+            Knowledge.guessWords[word] = aveGSize
+        return self.allMins(Knowledge.guessWords)
         
 
 

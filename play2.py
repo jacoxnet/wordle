@@ -1,18 +1,18 @@
-from wordletrie import WORDLEN
+from wordletrie import WORDLEN, Trie
 from knowledge import Knowledge
 from listofwords import SOLUTIONS, ALLWORDS
+import random
 
 # initialize knowledge (which initializes underlying trie)
 
 k = Knowledge(SOLUTIONS)
-g = Knowledge(ALLWORDS)
+g = Knowledge(ALLWORDS + SOLUTIONS)
 
 print('Welcome to Wordle-Solve')
 print('   word length =', WORDLEN)
 print('\n')
 guess = ''
 while True:
-    guess = ""
     print('\n   1 - new guess')
     print('   2 - enter feedback from a guess')
     selection = int(input('choice: '))
@@ -20,7 +20,8 @@ while True:
         print('Invalid choice - try again')    
     if selection == 1:
         print("Calculating best guess ...")
-        guess = k.getBestGuess()
+        guesses = k.getBestGuess()
+        guess = guesses[0]
         print('New guess is ', guess)
     if selection == 2:
         print('Word guess: ')
@@ -36,5 +37,5 @@ while True:
             continue
         k.updateKnowledge(guess, feedback)
         print('Feedback processed')
-        print("solution trie: ", k)
-        print("words:", k.allWords())
+        if len(k.allWords()) == 1:
+            print("Solution found: ", k.allWords()[0])
