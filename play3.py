@@ -1,7 +1,7 @@
 from wordletrie import WORDLEN, Trie
 from knowledge import Knowledge
 from listofwords import SOLUTIONS, ALLWORDS
-import random
+import json, signal
 
 # initialize knowledge (which initializes underlying trie)
 
@@ -15,6 +15,21 @@ print('   word length =', WORDLEN)
 print('\n')
 
 print("Evaluating each solution word to see how many guesses it takes to solve")
+ 
+def handler(signum, frame):
+    print("Interrupt - saving record")
+    f = open('record.json', 'w')
+    f.write(json.dumps(record))
+    f.close()
+    exit(1)
+ 
+signal.signal(signal.SIGINT, handler)
+
+def processGuess(guess, target):
+    print("Guessing ", guess)
+    response = k.colorCalc(guess, target)
+    print("Response ", response)
+    return response
 
 for i in range(len(SOLUTIONS)):
     target = SOLUTIONS[i]
@@ -25,28 +40,17 @@ for i in range(len(SOLUTIONS)):
     g = Knowledge(ALLWORDS + SOLUTIONS)
     while True:
         if guessNumber == 0:
-            print("Guessing ", "slate")
-            record[target] = {0: "slate"}
-            response = k.colorCalc("slate", target)
-            print("Response is ", response)
-            if response == "GGGGG":
-                print("solution found on guess 0")
-                break
-            else:
-                print("Updating knowledge")
-                k.updateKnowledge("slate", response)
-                guessNumber = guessNumber + 1
+            guess = "slate"
         else:
             guess = k.getBestGuess()[0]
-            print("Guessing ", guess)
-            record[target][guessNumber] = guess
-            response = k.colorCalc(guess, target)
-            print("Response is ", response)
-            if response == "GGGGG":
-                print("solution found on guess ", guessNumber)
-                break
-            else:
-                print("Updating knowledge")
-                k.updateKnowledge(guess, response)
-                guessNumber = guessNumber + 1
+        response = processGuess(guess, target)
+        record[target] = {0: {guess: response}}
+        if response == "GGGGG":
+            print("solution found on guess ", guessNumber)
+            break
+        else:
+            print("Updating knowledge")
+            k.updateKnowledge(guess, response)
+            guessNumber = guessNumber + 1
+
             
