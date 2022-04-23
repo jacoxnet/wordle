@@ -15,13 +15,16 @@ print('   word length =', WORDLEN)
 print('\n')
 
 print("Evaluating each solution word to see how many guesses it takes to solve")
- 
+
+STARTGUESS = 'roate'
+
+
 def handler(signum, frame):
     print("Interrupt - saving record")
     f = open('record.json', 'w')
     f.write(json.dumps(record))
     f.close()
-    exit(1)
+    raise RuntimeError
  
 signal.signal(signal.SIGINT, handler)
 
@@ -40,17 +43,26 @@ for i in range(len(SOLUTIONS)):
     g = Knowledge(ALLWORDS + SOLUTIONS)
     while True:
         if guessNumber == 0:
-            guess = "slate"
+            guess = STARTGUESS
         else:
             guess = k.getBestGuess()[0]
         response = processGuess(guess, target)
-        record[target] = {0: {guess: response}}
+        # print ('recording {', target, ': {', guessNumber, ': {', guess, ': ', response, '}}')
+        if target in record:
+            record[target][guessNumber] = {guess: response}
+        else:
+            record[target] = {guessNumber: {guess: response}}
         if response == "GGGGG":
             print("solution found on guess ", guessNumber)
+            break
+        elif guessNumber > 100:
+            print("solution not found")
             break
         else:
             print("Updating knowledge")
             k.updateKnowledge(guess, response)
             guessNumber = guessNumber + 1
 
-            
+f = open('record.json', 'w')
+f.write(json.dumps(record))
+f.close()

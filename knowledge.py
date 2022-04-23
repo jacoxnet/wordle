@@ -8,7 +8,7 @@ class Knowledge:
 
     # structure for scoring guess words
     guessWords = {}
-    for word in SOLUTIONS:
+    for word in SOLUTIONS + ALLWORDS:
         guessWords[word] = 0
 
     def __init__(self, wordList):
@@ -42,6 +42,8 @@ class Knowledge:
             # updated solved dict
             self.solved[i] = guess[i]
         for i in tresp["Y"]:
+            # because it's Y not G, delete words with this letter in this spot
+            self.trie.delLetterPos(guess[i], i)
             # delete all solution words without this letter in some position
             self.trie.delNLetter(guess[i])
             # update mandatory list
@@ -62,17 +64,17 @@ class Knowledge:
     # replace the letter in the secret with space so it isn't found again
     @staticmethod
     def colorCalc(guess, secret):
-        listSecret = [letter for letter in secret]
+        listSecret = list(secret)
         response = WORDLEN * [' ']
         for i in range(len(guess)):
             if guess[i] == listSecret[i]:
                 response[i] = 'G'
                 listSecret[i] = ' '
         for i in range(len(guess)):
-            if guess[i] in listSecret:
+            if response[i] != 'G' and guess[i] in listSecret:
                 response[i] = 'Y'
-                listSecret = [' ' if item == guess[i] else item for item in listSecret]
-        response = ['B' if item == ' ' else item for item in response]
+                listSecret[listSecret.index(guess[i])] = ' '
+        response = [item if item != ' ' else 'B' for item in response]
         return ''.join(response)
 
     # return the number of letters in common between two words
@@ -80,7 +82,7 @@ class Knowledge:
     def letterOverlap(word1, word2):
         return len(set(word1).intersection(set(word2)))
 
-    # given a guessword, returns the average size of resulting groupings
+    # given a guessword, returns the expected size of resulting groupings
     # that guess word could divide the solution words
     rdict = {}
     
@@ -92,9 +94,9 @@ class Knowledge:
                 rdict[result] = rdict[result] + 1
             else:
                 rdict[result] = 1
-        aveGSize = sum(rdict.values())/len(rdict)
+        expectedGSize = sum([v ** 2 for v in rdict.values()]) / sum(rdict.values())
         Knowledge.rdict = rdict
-        return aveGSize
+        return expectedGSize
 
     def allMins(self, dictWords):
         # find minimum value
@@ -113,8 +115,8 @@ class Knowledge:
         if len(self.allWords()) == 1:
             return self.allWords()
         for word in Knowledge.guessWords:
-            aveGSize =  self.scoreGuess(word)
-            Knowledge.guessWords[word] = aveGSize
+            expectedGSize =  self.scoreGuess(word)
+            Knowledge.guessWords[word] = expectedGSize
         return self.allMins(Knowledge.guessWords)
         
 
