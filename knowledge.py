@@ -5,7 +5,7 @@ import multiprocessing as mp
 import time
 
 # multiproceessing threads are used to calculate best guess
-THREADS = 16
+THREADS = 8
 
 class Knowledge:
 
