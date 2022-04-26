@@ -66,3 +66,14 @@ for i in range(len(SOLUTIONS)):
 f = open('record.json', 'w')
 f.write(json.dumps(record))
 f.close()
+histo = {}
+for k, v in record.items():
+    if len(v) in histo:
+        histo[len(v)] = histo[len(v)] + 1
+    else:
+        histo[len(v)] = 1
+print("Total words evaluated: ", sum(histo.values()))
+print("Average guesses per word: ", sum([k * v for k, v in histo]))
+for item in sorted(histo):
+    print (item, ": ", histo[item])
+print

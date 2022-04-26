@@ -31,7 +31,7 @@ while True:
         if new_guess != '':
             guess = new_guess
         print('Feedback - ', WORDLEN, 'letters')
-        feedback = input('B for Black, Y for Yellow, G for Green: ')
+        feedback = input('B for Black, Y for Yellow, G for Green: ').upper()
         if len(feedback) != WORDLEN or not min([c == 'B' or c == 'G' or c == 'Y' for c in feedback]):
             print('Error in input')
             continue

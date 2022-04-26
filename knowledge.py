@@ -1,15 +1,16 @@
 import time
-import copy
-import random
 from wordletrie import Trie, WORDLEN
 from listofwords import ALLWORDS, SOLUTIONS
+import multiprocessing as mp
+import time
+
+# multiproceessing threads are used to calculate best guess
+THREADS = 12
 
 class Knowledge:
 
     # structure for scoring guess words
-    guessWords = {}
-    for word in SOLUTIONS + ALLWORDS:
-        guessWords[word] = 0
+    guessWords = SOLUTIONS + ALLWORDS
 
     def __init__(self, wordList):
         self.trie = Trie()
@@ -84,25 +85,21 @@ class Knowledge:
 
     # given a guessword, returns the expected size of resulting groupings
     # that guess word could divide the solution words
-    rdict = {}
-    
-    def scoreGuess(self, guessword):
+    def scoreGuess(self, guessWord):
         rdict = {}
         for secretword in self.allWords():
-            result = Knowledge.colorCalc(guessword, secretword)
+            result = Knowledge.colorCalc(guessWord, secretword)
             if result in rdict:
                 rdict[result] = rdict[result] + 1
             else:
                 rdict[result] = 1
-        expectedGSize = sum([v ** 2 for v in rdict.values()]) / sum(rdict.values())
-        Knowledge.rdict = rdict
-        return expectedGSize
+        return sum([v ** 2 for v in rdict.values()]) / sum(rdict.values())
 
-    def allMins(self, dictWords):
+    def allMins(self, wordList, scoreList):
         # find minimum value
-        mm = min(dictWords.values())
+        mm = min(scoreList)
         #create list of all minimum words
-        rv = [k for k in dictWords.keys() if dictWords[k] == mm]
+        rv = [word for word in wordList if scoreList[wordList.index(word)] == mm]
         # create smaller list of secretwords in earlier list
         sv = [secretWord for secretWord in rv if self.trie.search(secretWord) != -1]
         # return only secret words if there are some
@@ -114,11 +111,11 @@ class Knowledge:
     def getBestGuess(self):
         if len(self.allWords()) == 1:
             return self.allWords()
-        for word in Knowledge.guessWords:
-            expectedGSize =  self.scoreGuess(word)
-            Knowledge.guessWords[word] = expectedGSize
-        return self.allMins(Knowledge.guessWords)
+        # place all the guess words in queue for multithreading
+        start = time.time()
+        p = mp.Pool(processes=THREADS)
+        guessWordsResults = p.map(self.scoreGuess, Knowledge.guessWords)
+        endtime = time.time()
+        print(f'Threads {THREADS} total time: {endtime - start}')
+        return self.allMins(Knowledge.guessWords, guessWordsResults)
         
-
-
-

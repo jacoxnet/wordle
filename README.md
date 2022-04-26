@@ -4,6 +4,14 @@ These python3 programs helps to solve Wordle type puzzles.
 
 -------------------
 
+## FURTHER UPDATE
+
+-------------------
+
+Added multiprocessing with user-specified process count to speed up calculating guesses. Versions 2 and 3 below work the same way but calculating guesses is faster.
+
+-------------------
+
 ## VERSION 3
 
 -------------------
