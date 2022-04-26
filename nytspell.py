@@ -1,6 +1,6 @@
 import json, copy
-WORDLEN = [4, 11]
-puzzle = ['p', ['g', 'u', 'n', 'r', 'b', 'i' ]] 
+WORDLEN = [4, 25]
+puzzle = ['l', ['p', 'g', 'm', 'a', 'e', 'x' ]] 
 alph = [x for x in 'abcdefghijklmnopqrstuvwxyz']
 
 # word list - load in from json file
@@ -11,7 +11,6 @@ wordList = set(wordList.keys())
 f.close()
 print(f"Loaded {len(wordList)} words")
 
-len(wordList)
 lexicon = set()
 
 for letter in alph:
@@ -28,3 +27,4 @@ for word in copy.copy(wordList):
     else:
         pass
 
+print (wordList)

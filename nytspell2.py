@@ -1,5 +1,5 @@
-WORDLEN = [4, 15]
-puzzle = ['p', ['g', 'u', 'n', 'r', 'b', 'i' ]] 
+WORDLEN = [4, 20]
+puzzle = ['l', ['p', 'g', 'm', 'a', 'e', 'x' ]] 
 
 
 import json
@@ -29,3 +29,5 @@ for word in wordList:
             break
     if qualified:
         lexicon.add(word)
+
+print(lexicon)
