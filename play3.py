@@ -1,6 +1,6 @@
 from wordletrie import WORDLEN, Trie
 from knowledge import Knowledge
-from listofwords import SOLUTIONS, ALLWORDS
+from shortlist import SOLUTIONS, ALLWORDS
 import json, signal
 
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         else:
             histo[len(v)] = 1
     print("Total words evaluated: ", sum(histo.values()))
-    print("Average guesses per word: ", sum([k * v for k, v in histo]))
+    print("Average guesses per word: ", sum([k * v for k, v in histo.items()])/sum(histo.values()))
     for item in sorted(histo):
         print (item, ": ", histo[item])
     print

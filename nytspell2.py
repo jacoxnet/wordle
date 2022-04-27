@@ -1,5 +1,5 @@
 WORDLEN = [4, 20]
-puzzle = ['l', ['p', 'g', 'm', 'a', 'e', 'x' ]] 
+puzzle = ['f', ['t', 'n', 'o', 'e', 'c', 'i']] 
 
 
 import json
