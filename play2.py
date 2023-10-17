@@ -24,6 +24,7 @@ if __name__ == '__main__':
             guesses = k.getBestGuess()
             guess = guesses[0]
             print('New guess is ', guess)
+            print('All guesses:', guesses)
         if selection == 2:
             print('Word guess: ')
             if guess != '':
