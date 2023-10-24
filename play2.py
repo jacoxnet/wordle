@@ -1,6 +1,6 @@
 from wordletrie import WORDLEN, Trie
 from knowledge import Knowledge
-from listofwords import SOLUTIONS, ALLWORDS
+from wordlists.listofwords import SOLUTIONS, ALLWORDS
 
 
 if __name__ == '__main__':

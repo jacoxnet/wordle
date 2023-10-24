@@ -1,6 +1,6 @@
 import time
 from wordletrie import Trie, WORDLEN
-from listofwords import ALLWORDS, SOLUTIONS
+from wordlists.listofwords import ALLWORDS, SOLUTIONS
 import multiprocessing as mp
 import time
 

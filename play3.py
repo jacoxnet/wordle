@@ -1,6 +1,6 @@
 from wordletrie import WORDLEN, Trie
 from knowledge import Knowledge
-from shortlist import SOLUTIONS, ALLWORDS
+from wordlists.shortlist import SOLUTIONS, ALLWORDS
 import json, signal
 
 
