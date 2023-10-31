@@ -1,13 +1,9 @@
-from wordletrie import WORDLEN, Trie
+from upload import WORDLEN, all_words
 from knowledge import Knowledge
-from wordlists.listofwords import SOLUTIONS, ALLWORDS
-
 
 if __name__ == '__main__':
-    # initialize knowledge (which initializes underlying trie)
 
-    k = Knowledge(SOLUTIONS)
-    g = Knowledge(ALLWORDS + SOLUTIONS)
+    k = Knowledge(all_words.keys())
 
     print('Welcome to Wordle-Solve')
     print('   word length =', WORDLEN)
@@ -21,7 +17,7 @@ if __name__ == '__main__':
             print('Invalid choice - try again')    
         if selection == 1:
             print("Calculating best guess ...")
-            guesses = k.getBestGuess()
+            guesses = k.get_best_guess()
             guess = guesses[0]
             print('New guess is ', guess)
             print('All guesses:', guesses)
@@ -37,7 +33,7 @@ if __name__ == '__main__':
             if len(feedback) != WORDLEN or not min([c == 'B' or c == 'G' or c == 'Y' for c in feedback]):
                 print('Error in input')
                 continue
-            k.updateKnowledge(guess, feedback)
+            k.update_knowledge(guess, feedback)
             print('Feedback processed')
-            if len(k.allWords()) == 1:
-                print("Solution found: ", k.allWords()[0])
+            if k.is_solved() == True:
+                print("Solution found: ", k.solution_set)

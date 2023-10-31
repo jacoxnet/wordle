@@ -1,31 +1,18 @@
 import time
-from wordletrie import Trie, WORDLEN
-from wordlists.listofwords import ALLWORDS, SOLUTIONS
+from upload import WORDLEN, word_index, letter_index
 import multiprocessing as mp
-import time
 
 # multiproceessing threads are used to calculate best guess
 THREADS = mp.cpu_count()
 
 class Knowledge:
 
-    # structure for scoring guess words
-    guessWords = SOLUTIONS + ALLWORDS
-
-    def __init__(self, wordList):
-        self.trie = Trie()
-        for word in wordList:
-            self.trie.insert(word)
+    def __init__(self, word_list):
+        self.all_words = list(word_list)
+        self.solution_set = set(word_list)
         self.mandatory = set()
-        self.solved = {}
-
-
-    def __repr__(self):
-        return ("Trie of length " + str(len(self.trie.allWords())) + " mandatory:" + str(self.mandatory) +
-                " solved:" + str(self.solved))
-
-    def allWords(self):
-        return self.trie.allWords()
+        # solved = {0: 's', 2:'l', 3:'a' ... }
+        self.solved = dict()
 
     # update knowledge based on color response to guess word
     # response is in the form of a string of G, B, and Y. 
@@ -33,30 +20,33 @@ class Knowledge:
     #   Y - yellow (letter correc in wrong position)
     #   B - black or shadow (letter not in word)
     #   because of serial nature of this inquiry, we need to process in order of G, Y, B
-    def updateKnowledge(self, guess, response):
+    def update_knowledge(self, guess, response):
         tresp = {'G': [], 'Y': [], 'B': []}
         for i in range(0, len(response)):
             tresp[response[i]].append(i)
         for i in tresp['G']:
-            # delete all solution words without this letter in this posn
-            self.trie.delNLetterPos(guess[i], i)
-            # updated solved dict
+            # reduce word_set by intersecting with words with that letter in that posn
+            self.solution_set = self.solution_set & letter_index[i][guess[i]]
             self.solved[i] = guess[i]
         for i in tresp["Y"]:
             # because it's Y not G, delete words with this letter in this spot
-            self.trie.delLetterPos(guess[i], i)
-            # delete all solution words without this letter in some position
-            self.trie.delNLetter(guess[i])
-            # update mandatory list
+            # and reduce by intersecting words with this letter in some spot
+            self.solution_set = (self.solution_set - letter_index[i][guess[i]]) & word_index[guess[i]]
             self.mandatory.add(guess[i])
         for i in tresp["B"]:
-            if guess[i] in self.mandatory or guess[i] in self.solved.values():
-                # mandatory or solved letter - we can only delete words with this guess letter at this pos
-                self.trie.delLetterPos(guess[i], i)
-            else:
-                self.trie.delLetter(guess[i])
+            # delete words with this letter in this spot
+            self.solution_set = self.solution_set - letter_index[i][guess[i]]
+            # only if letter not in mandatory or solved, delete all words with that letter
+            if guess[i] not in self.mandatory and guess[i] not in self.solved.values():
+                self.solution_set = self.solution_set - word_index[guess[i]]
 
-
+    
+    def is_solved(self):
+        if len(self.solution_set) <= 1:
+            return True
+        else:
+            return False
+        
     # take guess and secret word and calculate a color response
     #   G - green (letter correct in proper position)
     #   Y - yellow (letter correc in wrong position)
@@ -64,7 +54,7 @@ class Knowledge:
     # because there can be duplicate letters, when we find a match we
     # replace the letter in the secret with space so it isn't found again
     @staticmethod
-    def colorCalc(guess, secret):
+    def color_calc(guess, secret):
         listSecret = list(secret)
         response = WORDLEN * [' ']
         for i in range(len(guess)):
@@ -78,44 +68,32 @@ class Knowledge:
         response = [item if item != ' ' else 'B' for item in response]
         return ''.join(response)
 
-    # return the number of letters in common between two words
-    @staticmethod
-    def letterOverlap(word1, word2):
-        return len(set(word1).intersection(set(word2)))
-
     # given a guessword, returns the expected size of resulting groupings
     # that guess word could divide the solution words
-    def scoreGuess(self, guessWord):
+    def score_guess(self, guess_word):
         rdict = {}
-        for secretword in self.allWords():
-            result = Knowledge.colorCalc(guessWord, secretword)
+        for word in self.solution_set:
+            result = Knowledge.color_calc(guess_word, word)
             if result in rdict:
                 rdict[result] = rdict[result] + 1
             else:
                 rdict[result] = 1
         return sum([v ** 2 for v in rdict.values()]) / sum(rdict.values())
 
-    def allMins(self, wordList, scoreList):
+    def all_mins(self, wordList, scoreList):
         # find minimum value
         mm = min(scoreList)
         #create list of all minimum words
         rv = [word for word in wordList if scoreList[wordList.index(word)] == mm]
-        # create smaller list of secretwords in earlier list
-        sv = [secretWord for secretWord in rv if self.trie.search(secretWord) != -1]
-        # return only secret words if there are some
-        if len(sv) > 0:
-            return sv
-        else:
-            return rv
+        return rv
 
-    def getBestGuess(self):
-        if len(self.allWords()) == 1:
-            return self.allWords()
-        # place all the guess words in queue for multithreading
+    def get_best_guess(self):
+        if self.is_solved():
+            return self.solution_set
+        # place all  words in queue for multithreading
         start = time.time()
         p = mp.Pool(processes=THREADS)
-        guessWordsResults = p.map(self.scoreGuess, Knowledge.guessWords)
+        guess_results = list(p.map(self.score_guess, self.all_words))
         endtime = time.time()
         print(f'Threads {THREADS} total time: {endtime - start}')
-        return self.allMins(Knowledge.guessWords, guessWordsResults)
-        
+        return self.all_mins(self.all_words, guess_results)
