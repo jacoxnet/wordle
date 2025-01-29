@@ -126,7 +126,7 @@ class WordKnowledge:
             return 100 * (guess == valids[0])
         for word in valids:
             if word != guess:
-                k2 = copy.deepcopy(self)
+                k2 = deepcopy(self)
                 # calculate the response assuming word is the secret
                 response = k2.color_calc(guess, word)
                 # update copy of knowledge with that response
@@ -163,7 +163,7 @@ class WordKnowledge:
     def nextGuess(self, valids, all_words):
         wc_guess = self.best_wc_guess(valids, all_words)
         print('Evaluating ', len(valids), 'possibilities')
-        if len(valids) > 400:
+        if len(valids) > 500:
             print('Using word count method only')
             return self.best_wc_guess(valids, all_words)
         else:

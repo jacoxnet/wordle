@@ -2,7 +2,7 @@ import wordle_solve, json, copy
 
 # word list - load in from json file
 # f = open('bigdictionary.json')
-f = open('wordledictionary.json')
+f = open('wordlists/wordledictionary.json')
 wordList = json.load(f)
 f.close
 
