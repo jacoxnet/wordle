@@ -1,13 +1,13 @@
 from wordletrie import WORDLEN, Trie
 from knowledge import Knowledge
-from listofwords import SOLUTIONS, ALLWORDS
+from wordlists.listofwords import SOLUTIONS, ALLWORDS
 
 
 if __name__ == '__main__':
     # initialize knowledge (which initializes underlying trie)
 
-    k = Knowledge(SOLUTIONS)
-    g = Knowledge(ALLWORDS + SOLUTIONS)
+    k = Knowledge(Knowledge.solutions)
+    g = Knowledge(Knowledge.guessWords)
 
     print('Welcome to Wordle-Solve')
     print('   word length =', WORDLEN)

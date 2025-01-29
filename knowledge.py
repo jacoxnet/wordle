@@ -1,6 +1,6 @@
 import time
 from wordletrie import Trie, WORDLEN
-from listofwords import ALLWORDS, SOLUTIONS
+from importdict import get_wordlists
 import multiprocessing as mp
 import time
 
@@ -10,7 +10,8 @@ THREADS = mp.cpu_count()
 class Knowledge:
 
     # structure for scoring guess words
-    guessWords = SOLUTIONS + ALLWORDS
+    solutions, others = get_wordlists()
+    guessWords = solutions + others
 
     def __init__(self, wordList):
         self.trie = Trie()
