@@ -1,29 +1,35 @@
 import csv
 from wordletrie import WORDLEN
-MAX_INDEX = 1000
+from wordlists.listofwords import SOLUTIONS, ALLWORDS
+MAX_BEST = 2000
+MAX_OTHER = 5000
 
 
 def get_wordlists():
-    wordlist = {}
+    wordlist = []
     with open("wordlists/unigram_freq.csv", "r") as unigram:
         dreader = csv.DictReader(unigram)
         for row in dreader:
-            wordlist[row["word"]] = row["count"]
+            if len(row["word"]) == WORDLEN:
+                wordlist.append(row["word"])
     
-    print(f"read a total of {len(wordlist)} words")
+    # print(f"read a total of {len(wordlist)} valid words")
+    # sort by frequency and choose top 1000
+    
+    best_words = set(wordlist[:MAX_BEST])
+    other_words = set(wordlist[MAX_BEST:MAX_OTHER])
+    # add original solutions and other words
+    for word in SOLUTIONS:
+        best_words.add(word)
+    for word in ALLWORDS:
+        other_words.add(word)
+    
+    with open("wordlists/RIDYHEWordList.csv", "r") as rid:
+        dreader = csv.DictReader(rid)
+        for row in dreader:
+            if len(row["Word"]) == WORDLEN:
+                other_words.add(row["Word"])
 
-    valid_words = {k:int(v) for (k, v) in wordlist.items() if len(k) == WORDLEN}
-    print(f"there are {len(valid_words)} valid words")
-
-    maxk = max(valid_words.values())
-    # replace freq with index with MAX_INDEX
-    valid_words = {word: int(MAX_INDEX*freq/maxk) for (word, freq) in valid_words.items()}
-    best_words = []
-    other_words = []
-    for word, freq in valid_words.items():
-        if valid_words[word] > 0:
-            best_words.append(word)
-        else:
-            other_words.append(word)
-    return best_words, other_words
+    print(f"Working with {len(best_words)} best words and {len(other_words)} other words")
+    return list(best_words), list(other_words)
 

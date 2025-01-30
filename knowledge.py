@@ -27,6 +27,9 @@ class Knowledge:
 
     def allWords(self):
         return self.trie.allWords()
+    
+    def delWord(self, word):
+        return self.trie.delete(word)
 
     # update knowledge based on color response to guess word
     # response is in the form of a string of G, B, and Y. 

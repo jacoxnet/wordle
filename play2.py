@@ -16,6 +16,7 @@ if __name__ == '__main__':
     while True:
         print('\n   1 - new guess')
         print('   2 - enter feedback from a guess')
+        print('   3 - discard previous guess')
         selection = int(input('choice: '))
         if selection < 1 or selection > 3:
             print('Invalid choice - try again')    
@@ -41,3 +42,11 @@ if __name__ == '__main__':
             print('Feedback processed')
             if len(k.allWords()) == 1:
                 print("Solution found: ", k.allWords()[0])
+        if selection == 3:
+            if guess == "":
+                print("No prior guess to discard")
+                continue
+            else:
+                print('Discarding guess word', guess)
+                k.guessWords.remove(guess)
+                print('Deleted')
