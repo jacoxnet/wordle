@@ -1,6 +1,5 @@
 import time
 from wordletrie import Trie, WORDLEN
-from importdict import get_wordlists
 import multiprocessing as mp
 import time
 
@@ -10,9 +9,7 @@ THREADS = mp.cpu_count()
 class Knowledge:
 
     # structure for scoring guess words
-    solutions, others = get_wordlists()
-    guessWords = solutions + others
-
+    
     def __init__(self, wordList):
         self.trie = Trie()
         for word in wordList:
@@ -112,14 +109,14 @@ class Knowledge:
         else:
             return rv
 
-    def getBestGuess(self):
+    def getBestGuess(self, guesswords):
         if len(self.allWords()) == 1:
             return self.allWords()
         # place all the guess words in queue for multithreading
         start = time.time()
         p = mp.Pool(processes=THREADS)
-        guessWordsResults = p.map(self.scoreGuess, Knowledge.guessWords)
+        guessWordsResults = p.map(self.scoreGuess, guesswords)
         endtime = time.time()
         print(f'Threads {THREADS} total time: {endtime - start}')
-        return self.allMins(Knowledge.guessWords, guessWordsResults)
+        return self.allMins(guesswords, guessWordsResults)
         
